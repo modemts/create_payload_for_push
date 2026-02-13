@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Push Architect 2026</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --accent: #007aff;
+            --accent-soft: rgba(0, 122, 255, 0.1);
+            --border: #e9ecef;
+            --text-main: #1d1d1f;
+            --text-dim: #86868b;
+            --input-bg: #f5f5f7;
+            --error: #ff3b30;
+            --shadow: 0 8px 30px rgba(0,0,0,0.04);
+            --terminal-bg: #0d1117;
+            --terminal-text: #00f2ff;
+            --terminal-glow: rgba(0, 242, 255, 0.4);
+        }
+
+        [data-theme="dark"] {
+            --bg: #0a0a0c;
+            --card-bg: #161618;
+            --border: #27272a;
+            --text-main: #f4f4f5;
+            --text-dim: #a1a1aa;
+            --input-bg: #242427;
+            --shadow: 0 10px 40px rgba(0,0,0,0.4);
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            transition: all 0.3s ease;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: var(--shadow);
+            position: relative;
+        }
+
+        .theme-toggle {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        header { text-align: center; margin-bottom: 30px; }
+        h1 { font-size: 22px; font-weight: 600; margin: 0; letter-spacing: -0.5px; }
+        .subtitle { color: var(--text-dim); font-size: 13px; margin-top: 5px; }
+
+        .group { margin-bottom: 20px; }
+        label { display: block; font-size: 11px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; margin-bottom: 8px; }
+        label span { color: var(--error); text-transform: none; font-size: 10px; margin-left: 4px; }
+
+        .platform-selector { display: flex; background: var(--input-bg); padding: 3px; border-radius: 12px; }
+        .platform-option { flex: 1; text-align: center; padding: 8px 0; font-size: 13px; cursor: pointer; border-radius: 10px; color: var(--text-dim); transition: 0.2s; }
+        .platform-option.active { background: var(--card-bg); color: var(--accent); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+
+        input, textarea { width: 100%; background: var(--input-bg); border: 1px solid transparent; border-radius: 12px; padding: 12px; color: var(--text-main); font-size: 14px; outline: none; box-sizing: border-box; transition: 0.2s; }
+        input:focus, textarea:focus { border-color: var(--accent); background: var(--card-bg); }
+        input.invalid, textarea.invalid { border-color: var(--error) !important; background: var(--card-bg); box-shadow: 0 0 0 4px rgba(255, 59, 48, 0.1) !important; }
+
+        .recipient-row { display: grid; grid-template-columns: 1fr 1fr 40px; gap: 10px; margin-bottom: 10px; }
+        .btn-remove { background: none; border: none; color: var(--error); cursor: pointer; font-size: 18px; }
+
+        .add-recipient { background: var(--accent-soft); border: none; color: var(--accent); width: 100%; padding: 10px; border-radius: 12px; cursor: pointer; font-weight: 500; font-size: 13px; }
+
+        .generate-btn { width: 100%; background: var(--text-main); color: var(--card-bg); border: none; padding: 16px; border-radius: 14px; font-weight: 600; cursor: pointer; margin-top: 10px; transition: 0.2s; font-size: 15px; }
+        .generate-btn:hover { opacity: 0.9; }
+
+        /* ИСПРАВЛЕННЫЙ ТЕРМИНАЛ (БЕЗ ПРОКРУТКИ) */
+        .output-container { margin-top: 30px; display: none; }
+        pre {
+            background: var(--terminal-bg);
+            color: var(--terminal-text);
+            padding: 24px;
+            border-radius: 16px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            line-height: 1.6;
+            
+            /* Магия переноса строк */
+            white-space: pre-wrap;       /* Сохраняет пробелы и переносит строки */
+            overflow-wrap: break-word;   /* Разбивает длинные слова (URL, токены) */
+            word-wrap: break-word;       /* Поддержка старых браузеров */
+            
+            text-shadow: 0 0 5px var(--terminal-glow);
+            border: 1px solid #30363d;
+            box-sizing: border-box;
+            width: 100%;
+        }
+
+        .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
+        .btn-secondary { background: var(--card-bg); border: 1px solid var(--border); color: var(--text-main); padding: 12px; border-radius: 12px; cursor: pointer; font-size: 13px; font-weight: 500; }
+        .btn-secondary:hover { background: var(--input-bg); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn">🌙</button>
+
+    <header>
+        <h1>Push Architect</h1>
+        <div class="subtitle">Responsive Syntax • 2026 Edition</div>
+    </header>
+
+    <div class="group">
+        <label>Platform</label>
+        <div class="platform-selector">
+            <div class="platform-option active" onclick="setPlatform(this, 'order_ios')">iOS</div>
+            <div class="platform-option" onclick="setPlatform(this, 'order_android')">Android</div>
+            <div class="platform-option" onclick="setPlatform(this, 'order_huawei')">Huawei</div>
+        </div>
+    </div>
+
+    <div class="group">
+        <label>Recipients <span>(client_id required)</span></label>
+        <div id="recipients_list">
+            <div class="recipient-row">
+                <input type="number" placeholder="client_id" class="cid" value="4045168">
+                <input type="text" placeholder="token" class="tok" value="123">
+                <div></div>
+            </div>
+        </div>
+        <button class="add-recipient" onclick="addRecipient()">+ Add Client</button>
+    </div>
+
+    <div class="group" style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 15px;">
+        <div>
+            <label>Title</label>
+            <input type="text" id="title" placeholder="Optional">
+        </div>
+        <div>
+            <label>Repeat Count (Iterations)</label>
+            <input type="number" id="iterations" value="1" min="1">
+        </div>
+    </div>
+
+    <div class="group">
+        <label>Body <span>(required)</span></label>
+        <textarea id="body" rows="3" placeholder="Notification message..."></textarea>
+    </div>
+
+    <div class="group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+        <div>
+            <label>Image URL</label>
+            <input type="text" id="img" placeholder="https://...">
+        </div>
+        <div>
+            <label>Action URL</label>
+            <input type="text" id="act" placeholder="https://...">
+        </div>
+    </div>
+
+    <div class="group">
+        <label>Filename</label>
+        <input type="text" id="fname" value="payload_1">
+    </div>
+
+    <button class="generate-btn" onclick="generate()">GENERATE COMMAND</button>
+
+    <div class="output-container" id="outputContainer">
+        <label>Terminal Command</label>
+        <pre id="outputCode"></pre>
+        <div class="actions">
+            <button class="btn-secondary" onclick="copy()">Copy Code</button>
+            <button class="btn-secondary" onclick="download()">Download .json</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentPlatform = 'order_ios';
+
+    function toggleTheme() {
+        const isDark = document.body.hasAttribute('data-theme');
+        if (isDark) {
+            document.body.removeAttribute('data-theme');
+            document.getElementById('theme-btn').innerText = '🌙';
+        } else {
+            document.body.setAttribute('data-theme', 'dark');
+            document.getElementById('theme-btn').innerText = '☀️';
+        }
+    }
+
+    function setPlatform(el, val) {
+        document.querySelectorAll('.platform-option').forEach(opt => opt.classList.remove('active'));
+        el.classList.add('active');
+        currentPlatform = val;
+    }
+
+    function addRecipient() {
+        const row = document.createElement('div');
+        row.className = 'recipient-row';
+        row.innerHTML = `
+            <input type="number" placeholder="client_id" class="cid">
+            <input type="text" placeholder="token" class="tok" value="123">
+            <button class="btn-remove" onclick="this.parentElement.remove()">×</button>
+        `;
+        document.getElementById('recipients_list').appendChild(row);
+    }
+
+    function generate() {
+        const cids = document.getElementsByClassName('cid');
+        const toks = document.getElementsByClassName('tok');
+        const bodyInput = document.getElementById('body');
+        const iterCount = parseInt(document.getElementById('iterations').value) || 1;
+        const fname = (document.getElementById('fname').value || 'payload_1').replace('.json', '');
+        
+        let recipients = [];
+        let hasError = false;
+
+        for (let i = 0; i < cids.length; i++) {
+            cids[i].classList.remove('invalid');
+            if (!cids[i].value.trim()) {
+                cids[i].classList.add('invalid');
+                cids[i].focus();
+                hasError = true;
+                break;
+            }
+            recipients.push({ client_id: parseInt(cids[i].value), token: toks[i].value || "123" });
+        }
+
+        if (hasError) return;
+
+        bodyInput.classList.remove('invalid');
+        if (!bodyInput.value.trim()) {
+            bodyInput.classList.add('invalid');
+            bodyInput.focus();
+            return;
+        }
+
+        const payload = {
+            recipients: [{ app_target: currentPlatform, recipients: recipients }],
+            push_message: {
+                title: document.getElementById('title').value,
+                body: bodyInput.value,
+                image_url: document.getElementById('img').value,
+                action_url: document.getElementById('act').value,
+                action_target: "in-app",
+                priority: "normal",
+                marketing_company_id: 456,
+                data: { key1: "value1", key2: "value2" }
+            },
+            is_marketing: true,
+            is_persistent: true,
+            ttl: 1000
+        };
+
+        const jsonString = JSON.stringify(payload, null, 2);
+        
+        let resultCommand = `cat > ${fname}.json <<EOF\n${jsonString}\nEOF\n\n`;
+
+        const wgetCmd = [
+            `wget -qO- \\`,
+            `  --header='Content-Type: application/json' \\`,
+            `  --header='Accept: application/json' \\`,
+            `  --post-file=${fname}.json \\`,
+            `  http://localhost:80/internal/v1/notifications`
+        ];
+
+        if (iterCount > 1) {
+            resultCommand += `for i in $(seq 1 ${iterCount}); do\n`;
+            resultCommand += `  echo "=== ITERATION №$i === "\n`;
+            resultCommand += wgetCmd.map(line => `  ${line}`).join('\n') + '\n';
+            resultCommand += `  echo -e "\\n"\ndone`;
+        } else {
+            resultCommand += wgetCmd.join('\n');
+        }
+
+        document.getElementById('outputCode').innerText = resultCommand;
+        document.getElementById('outputContainer').style.display = 'block';
+        
+        setTimeout(() => {
+            document.getElementById('outputContainer').scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+    }
+
+    function copy() {
+        const text = document.getElementById('outputCode').innerText;
+        navigator.clipboard.writeText(text);
+        alert('Код скопирован!');
+    }
+
+    function download() {
+        const text = document.getElementById('outputCode').innerText;
+        const fname = document.getElementById('fname').value || 'payload_1';
+        const blob = new Blob([text], {type: 'text/plain'});
+        const a = document.createElement('a');
+        a.download = fname + '.json';
+        a.href = URL.createObjectURL(blob);
+        a.click();
+    }
+</script>
+
+</body>
+</html>
